@@ -51,6 +51,7 @@
     "test:ui": "vitest --ui",
     "coverage": "vitest run --coverage",
     "check": "run-s typecheck pkg:build test",
+    "docs": "run-s build && api-extractor run --local && api-documenter markdown -i temp -o docs",
     "dev": "run-p pkg:watch",
     "prepublishOnly": "npm run build"
   },
