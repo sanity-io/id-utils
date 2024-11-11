@@ -2,9 +2,40 @@
 
 Utilities for working with Sanity document IDs
 
+# Why?
+Quite often you'll see an APIs that takes a Sanity document ID as a `string`, but in many cases there’s an implicit expectation in the API about this document ID being either a published ID or a draft ID. Passing the wrong type of ID can lead to subtle errors, and at the same time guarding against this often leads to lots of redundant checks in places we a certain document ID variant is required.
+
+With the help from this library, and it’s use of [branded types](https://www.learningtypescript.com/articles/branded-types) functions and components can now declare which ID variant they need as part of their signature, which provides developers with immediate feedback if attempting to pass the wrong variant.
+
+
+For example, imagine that this component has an implicit assumption that `props.id` will always be the id of the published document:
+```typescript
+function SomeComponent(props: {id: string}) {
+//... Things will break in spectacular ways if `props.id` is a draft id
+}
+```
+This can now be written this way:
+```typescript
+function SomeComponent(props: {id: PublishedId}) {
+//...
+}
+````
+If you try to pass this component a draft id now, you’ll immediately see an error in your IDE
+```tsx
+<SomeComponent id={someDraftId} />
+// TS2322: Type string is not assignable to type PublishedId
+// Or, if it's of the DraftId type:
+// TS2322: Type DraftId is not assignable to type PublishedId
+```
+
+You will have to make sure to turn it into a published id before passing it:
+```tsx
+<SomeComponent id={getPublishedId(someDraftId)} />
+```
+
 # Features
 
-- Added type safety through [branded types](https://egghead.io/blog/using-branded-types-in-typescript) via [ts-brand](https://github.com/kourge/ts-brand).
+- Added type safety through [branded types](https://www.learningtypescript.com/articles/branded-types) via [ts-brand](https://github.com/kourge/ts-brand).
 - Runtime validation of IDs. Tells you if you accidentally use an [invalid](https://www.sanity.io/docs/ids#10abf7adf05a) ID.
 - Easily convert between the IDs the published documents, draft document and any version of a document.
 - Generate safe document ids from strings, useful for importing from external systems that may have incompatible ids
