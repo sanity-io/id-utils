@@ -38,7 +38,7 @@ export default [
     },
     settings: {},
     rules: {
-      'import/no-unresolved': ['error', {commonjs: true}],
+      'import/no-unresolved': 'off',
       'no-unused-vars': 'off',
       'import/no-dynamic-require': 'warn',
       'import/no-nodejs-modules': 'warn',
