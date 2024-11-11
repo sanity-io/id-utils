@@ -5,7 +5,7 @@
     "noEmit": true,
     "incremental": true,
     "paths": {
-      "@sanity/id-utils": ["../../src"]
+      "@sanity/id-utils": ["../src"]
     }
   }
 }
