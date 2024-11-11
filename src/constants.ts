@@ -1,4 +1,4 @@
-export const VALID_ID = /^[a-z0-9._-]+$/
+export const VALID_ID = /^[a-z-A-Z0-9._-]+$/
 
 export const DRAFTS_DIR = 'drafts'
 export const VERSION_DIR = 'versions'

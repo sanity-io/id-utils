@@ -3,11 +3,26 @@ import {type Brand, make} from 'ts-brand'
 import {DRAFTS_PREFIX, VALID_ID, VERSION_PREFIX} from './constants'
 import {partition, safe} from './helpers'
 
+/**
+ * @public
+ */
 export type DraftId = Brand<string, 'draftId'>
+/**
+ * @public
+ */
 export type PublishedId = Brand<string, 'publishedId'>
+/**
+ * @public
+ */
 export type VersionId = Brand<string, 'versionId'>
+/**
+ * @public
+ */
 export type DocumentId = DraftId | PublishedId | VersionId
 
+/**
+ * @public
+ */
 export const DocumentId = make<DocumentId>((id: string) => {
   validateAnyId(id)
   const results = [validatePublishedId, validateDraftId, validateVersionId].map(
@@ -30,15 +45,25 @@ export const DocumentId = make<DocumentId>((id: string) => {
   return id
 })
 
+/**
+ * @public
+ */
+
 export const DraftId = make<DraftId>(id => {
   validateAnyId(id)
   validateDraftId(id)
 })
+/**
+ * @public
+ */
 export const PublishedId = make<PublishedId>(id => {
   validateAnyId(id)
   validatePublishedId(id)
 })
 
+/**
+ * @public
+ */
 export const VersionId = make<VersionId>(id => {
   validateAnyId(id)
   validateVersionId(id)

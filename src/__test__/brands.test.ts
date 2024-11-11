@@ -7,6 +7,7 @@ test('DocumentId()', () => {
   expect(() => DocumentId('foo')).not.toThrow()
   expect(() => DocumentId('foo.bar')).not.toThrow()
   expect(() => DocumentId('foo.bar.baz')).not.toThrow()
+  expect(() => DocumentId('foo.BaR.bAz')).not.toThrow()
   expect(() => DocumentId('_.some.sys-doc')).not.toThrow()
   expect(() => DocumentId('versions.some-bundle.doc-123')).not.toThrow()
 
@@ -59,7 +60,7 @@ test('PublishedId()', () => {
     `[Error: Must be a non-empty string]`,
   )
   expect(() => PublishedId('@øæå')).toThrowErrorMatchingInlineSnapshot(
-    `[Error: Not a valid document ID: "@øæå" – Must match the /^[a-z0-9._-]+$/ RegExp]`,
+    `[Error: Not a valid document ID: "@øæå" – Must match the /^[a-z-A-Z0-9._-]+$/ RegExp]`,
   )
   expect(() => PublishedId('versions.baz')).toThrowErrorMatchingInlineSnapshot(
     `[Error: Not a valid published ID: "versions.baz" – cannot start with "drafts." or "versions."]`,
@@ -77,7 +78,7 @@ test('VersionId()', () => {
   expect(() =>
     VersionId('versions..versions.some-bundle.some-doc'),
   ).toThrowErrorMatchingInlineSnapshot(
-    `[Error: Not a valid version ID: "versions..versions.some-bundle.some-doc" – VERSION must match the /^[a-z0-9._-]+$/ RegExp in versions.[VERSION].id]`,
+    `[Error: Not a valid version ID: "versions..versions.some-bundle.some-doc" – VERSION must match the /^[a-z-A-Z0-9._-]+$/ RegExp in versions.[VERSION].id]`,
   )
 
   expect(() => VersionId('drafts.foo')).toThrowErrorMatchingInlineSnapshot(
@@ -90,7 +91,7 @@ test('VersionId()', () => {
   expect(() =>
     VersionId('versions.ın˝valıd.foo'),
   ).toThrowErrorMatchingInlineSnapshot(
-    `[Error: Not a valid document ID: "versions.ın˝valıd.foo" – Must match the /^[a-z0-9._-]+$/ RegExp]`,
+    `[Error: Not a valid document ID: "versions.ın˝valıd.foo" – Must match the /^[a-z-A-Z0-9._-]+$/ RegExp]`,
   )
   expect(() =>
     VersionId('versions.drafts.foo'),
