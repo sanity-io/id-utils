@@ -129,12 +129,12 @@ Check whether a given document ID is a published ID
 </td></tr>
 <tr><td>
 
-[isPublishedIdEqual(documentId, candidateId)](./id-utils.ispublishedidequal.md)
+[isPublishedIdEqual(id, otherId)](./id-utils.ispublishedidequal.md)
 
 
 </td><td>
 
-Checks if the document ID `documentId` has the same published ID as `equalsDocumentId`<!-- -->, ignoring any draft or version prefix.
+Checks if two document ids resolves to the same published ID, ignoring any draft or version prefix.
 
 
 </td></tr>

@@ -4,14 +4,14 @@
 
 ## isPublishedIdEqual() function
 
-Checks if the document ID `documentId` has the same published ID as `equalsDocumentId`<!-- -->, ignoring any draft or version prefix.
+Checks if two document ids resolves to the same published ID, ignoring any draft or version prefix.
 
 **Signature:**
 
 ```typescript
 export declare function isPublishedIdEqual(
-  documentId: DocumentId,
-  candidateId: DocumentId,
+  id: DocumentId,
+  otherId: DocumentId,
 ): boolean
 ```
 
@@ -35,7 +35,7 @@ Description
 </th></tr></thead>
 <tbody><tr><td>
 
-documentId
+id
 
 
 </td><td>
@@ -51,7 +51,7 @@ The document ID to check
 </td></tr>
 <tr><td>
 
-candidateId
+otherId
 
 
 </td><td>
@@ -61,7 +61,7 @@ candidateId
 
 </td><td>
 
-The document ID to check against
+The other document ID to check
 
 
 </td></tr>
@@ -70,7 +70,7 @@ The document ID to check against
 
 boolean
 
-`true` if the document IDs are equal, `false` otherwise
+`true` if the document IDs represents the same document, `false` otherwise
 
 ## Example 1
 

@@ -60,8 +60,8 @@ export function isPublishedId(id: DocumentId): id is PublishedId
 
 // @public
 export function isPublishedIdEqual(
-documentId: DocumentId,
-candidateId: DocumentId,
+id: DocumentId,
+otherId: DocumentId,
 ): boolean
 
 // @public
