@@ -9,13 +9,12 @@ import {getPublishedId} from './converters'
 
 /**
  *
- * Checks if the document ID `documentId` has the same published ID as `equalsDocumentId`,
- * ignoring any draft or version prefix.
+ * Checks if two document ids resolves to the same published ID, ignoring any draft or version prefix.
  *
  * @public
  *
- * @param documentId - The document ID to check
- * @param candidateId - The document ID to check against
+ * @param id - The document ID to check
+ * @param otherId - The other document ID to check
  *
  * @example
  * Draft vs published document ID, but representing the same document:
@@ -36,13 +35,13 @@ import {getPublishedId} from './converters'
  * console.log(isPublishedIdEqual('foo', 'bar'));
  * ```
  *
- * @returns `true` if the document IDs are equal, `false` otherwise
+ * @returns `true` if the document IDs represents the same document, `false` otherwise
  */
 export function isPublishedIdEqual(
-  documentId: DocumentId,
-  candidateId: DocumentId,
+  id: DocumentId,
+  otherId: DocumentId,
 ): boolean {
-  return getPublishedId(documentId) === getPublishedId(candidateId)
+  return getPublishedId(id) === getPublishedId(otherId)
 }
 
 /**
