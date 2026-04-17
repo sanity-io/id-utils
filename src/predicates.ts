@@ -5,13 +5,10 @@ import {
   type VariantVersionId,
   type VersionId,
 } from './brands'
-import {
-  DRAFTS_PREFIX,
-  PATH_SEPARATOR,
-  VARIANT_PREFIX,
-  VERSION_PREFIX,
-} from './constants'
-import {getPublishedId} from './converters'
+import {DRAFTS_PREFIX, VARIANT_PREFIX, VERSION_PREFIX} from './constants'
+import {getPublishedId, getVariantName} from './converters'
+
+const VARIANT_VERSION_PREFIX = `${VERSION_PREFIX}${VARIANT_PREFIX}`
 
 /**
  *
@@ -84,9 +81,7 @@ export function isVersionId(id: DocumentId): id is VersionId {
  * @param id - The document ID to check
  */
 export function isVariantVersionId(id: DocumentId): id is VariantVersionId {
-  if (!isVersionId(id)) return false
-  const bundle = id.split(PATH_SEPARATOR)[1]
-  return bundle !== undefined && bundle.startsWith(VARIANT_PREFIX)
+  return id.startsWith(VARIANT_VERSION_PREFIX)
 }
 
 /**
@@ -148,8 +143,5 @@ export function isVariantOf(
 ): candidate is VariantVersionId {
   if (!isVariantVersionId(candidate)) return false
   if (!isPublishedIdEqual(id, candidate)) return false
-  if (variantName === undefined) return true
-  const bundle = candidate.split(PATH_SEPARATOR)[1]!
-  const primary = bundle.split('~')[0]!
-  return primary === `${VARIANT_PREFIX}${variantName}`
+  return variantName === undefined || getVariantName(candidate) === variantName
 }

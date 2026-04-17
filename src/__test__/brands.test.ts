@@ -127,21 +127,21 @@ test('VersionId() – variant bundles', () => {
   expect(() =>
     VersionId('versions.var-french~var-german.page-1'),
   ).toThrowErrorMatchingInlineSnapshot(
-    `[Error: Not a valid variant version ID: "versions.var-french~var-german.page-1" – secondary bundle "var-german" cannot be a variant bundle]`,
+    `[Error: Not a valid version ID: "versions.var-french~var-german.page-1" – secondary bundle "var-german" cannot be a variant bundle]`,
   )
 
   // `var-{name}~published` is invalid
   expect(() =>
     VersionId('versions.var-french~published.page-1'),
   ).toThrowErrorMatchingInlineSnapshot(
-    `[Error: Not a valid variant version ID: "versions.var-french~published.page-1" – use the plain variant bundle (no "~") to target the published source]`,
+    `[Error: Not a valid version ID: "versions.var-french~published.page-1" – use the plain variant bundle (no "~") to target the published source]`,
   )
 
   // empty secondary segment
   expect(() =>
     VersionId('versions.var-french~.page-1'),
   ).toThrowErrorMatchingInlineSnapshot(
-    `[Error: Not a valid variant version ID: "versions.var-french~.page-1" – secondary bundle in "var-french~" must be non-empty]`,
+    `[Error: Not a valid version ID: "versions.var-french~.page-1" – secondary bundle in "var-french~" must be non-empty]`,
   )
 
   // multiple `~` in the bundle segment

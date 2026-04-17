@@ -66,15 +66,15 @@ export function createVersionId(
  *
  * @public
  * @param variantName - The variant name, e.g. `french`
- * @param secondaryBundle - Optional secondary source-layer bundle. Pass `null`
- *   or omit to target the published source. Pass `'drafts'` to target the draft
- *   source, or a release name to target that release.
+ * @param secondaryBundle - Optional secondary source-layer bundle. Omit to
+ *   target the published source. Pass `'drafts'` to target the draft source,
+ *   or a release name to target that release.
  * @param input - Optional input string to create the id from. See
  *   {@link createPublishedId} for how the input is sanitized.
  */
 export function createVariantVersionId(
   variantName: string,
-  secondaryBundle?: string | null,
+  secondaryBundle?: string,
   input?: string,
 ): VariantVersionId {
   const bundle = getVariantBundleId(variantName, secondaryBundle)

@@ -1,6 +1,7 @@
 import {
   type DocumentId,
   DraftId,
+  parseVariantBundle,
   PublishedId,
   VariantVersionId,
   VersionId,
@@ -95,46 +96,7 @@ export function parseVariantBundleId(bundleId: string): {
   variantName: string
   secondaryBundle: string | null
 } {
-  if (!bundleId.startsWith(VARIANT_PREFIX)) {
-    throw new Error(
-      `Not a variant bundle id: "${bundleId}" – must start with "${VARIANT_PREFIX}"`,
-    )
-  }
-  const hasSeparator = bundleId.includes(VARIANT_BUNDLE_SEPARATOR)
-  const parts = bundleId.split(VARIANT_BUNDLE_SEPARATOR)
-  if (parts.length > 2) {
-    throw new Error(
-      `Not a valid variant bundle id: "${bundleId}" – at most one "${VARIANT_BUNDLE_SEPARATOR}" separator is allowed`,
-    )
-  }
-  const [primary, secondary] = parts as [string, string | undefined]
-  const variantName = primary.slice(VARIANT_PREFIX.length)
-  if (!variantName) {
-    throw new Error(
-      `Not a valid variant bundle id: "${bundleId}" – variant name must be non-empty`,
-    )
-  }
-  if (hasSeparator) {
-    if (!secondary) {
-      throw new Error(
-        `Not a valid variant bundle id: "${bundleId}" – secondary bundle must be non-empty`,
-      )
-    }
-    if (secondary.startsWith(VARIANT_PREFIX)) {
-      throw new Error(
-        `Not a valid variant bundle id: "${bundleId}" – secondary bundle cannot be a variant bundle`,
-      )
-    }
-    if (secondary === 'published') {
-      throw new Error(
-        `Not a valid variant bundle id: "${bundleId}" – omit the secondary bundle to target the published source`,
-      )
-    }
-  }
-  return {
-    variantName,
-    secondaryBundle: hasSeparator ? (secondary as string) : null,
-  }
+  return parseVariantBundle(bundleId, `Invalid variant bundle id "${bundleId}"`)
 }
 
 /**
@@ -151,87 +113,55 @@ export function parseVariantBundleId(bundleId: string): {
  */
 export function getVariantBundleId(
   variantName: string,
-  secondaryBundle?: string | null,
+  secondaryBundle?: string,
 ): string {
-  if (!variantName) {
-    throw new Error('variantName must be non-empty')
-  }
   if (variantName.startsWith(VARIANT_PREFIX)) {
     throw new Error(
-      `variantName must not include the "${VARIANT_PREFIX}" prefix (got "${variantName}")`,
+      `Invalid variant name "${variantName}": pass the bare variant name without the "${VARIANT_PREFIX}" prefix`,
     )
   }
   if (variantName.includes(VARIANT_BUNDLE_SEPARATOR)) {
     throw new Error(
-      `variantName must not contain "${VARIANT_BUNDLE_SEPARATOR}" (got "${variantName}")`,
+      `Invalid variant name "${variantName}": must not contain "${VARIANT_BUNDLE_SEPARATOR}"`,
     )
   }
-  const primary = `${VARIANT_PREFIX}${variantName}`
-  if (secondaryBundle === undefined || secondaryBundle === null) {
-    return primary
-  }
-  if (!secondaryBundle) {
-    throw new Error('secondaryBundle must be non-empty when provided')
-  }
-  if (secondaryBundle.startsWith(VARIANT_PREFIX)) {
-    throw new Error(
-      `secondaryBundle cannot be a variant bundle (got "${secondaryBundle}")`,
-    )
-  }
-  if (secondaryBundle === 'published') {
-    throw new Error(
-      'secondaryBundle cannot be "published" – omit it to target the published source',
-    )
-  }
-  if (secondaryBundle.includes(VARIANT_BUNDLE_SEPARATOR)) {
-    throw new Error(
-      `secondaryBundle must not contain "${VARIANT_BUNDLE_SEPARATOR}" (got "${secondaryBundle}")`,
-    )
-  }
-  return `${primary}${VARIANT_BUNDLE_SEPARATOR}${secondaryBundle}`
+  const bundle =
+    secondaryBundle === undefined
+      ? `${VARIANT_PREFIX}${variantName}`
+      : `${VARIANT_PREFIX}${variantName}${VARIANT_BUNDLE_SEPARATOR}${secondaryBundle}`
+  // Round-trip through the canonical parser so all remaining rule checks live
+  // in one place and error messages stay consistent.
+  parseVariantBundle(bundle, `Invalid variant bundle id "${bundle}"`)
+  return bundle
 }
 
 /**
  * Returns a variant version id for the given document id, variant name and
  * optional secondary source-layer bundle.
  *
- * If `id` is a draft id, the resulting variant version targets the draft source
- * layer and `secondaryBundle` must be omitted or `'drafts'`. If `id` is a
- * non-variant version id, the resulting variant version targets that version's
- * bundle as the secondary source layer and `secondaryBundle` must be omitted or
- * equal to that bundle.
+ * When `id` unambiguously identifies a source layer (a draft id or a
+ * non-variant version id), the secondary bundle is inferred from it and must
+ * either be omitted or agree with the inferred value. When `id` is a published
+ * or variant id, the secondary bundle is whatever is passed (omitted → target
+ * the published source).
  * @public
  */
 export function getVariantVersionId(
   id: DocumentId,
   variantName: string,
-  secondaryBundle?: string | null,
+  secondaryBundle?: string,
 ): VariantVersionId {
-  if (isVariantVersionId(id)) {
-    return getVariantVersionId(getPublishedId(id), variantName, secondaryBundle)
+  const inferred = inferSecondaryBundle(id)
+  if (
+    inferred !== undefined &&
+    secondaryBundle !== undefined &&
+    secondaryBundle !== inferred
+  ) {
+    throw new Error(
+      `Cannot build variant version id from "${id}": secondary bundle must be "${inferred}" or omitted (got "${secondaryBundle}")`,
+    )
   }
-  let resolvedSecondary: string | null | undefined = secondaryBundle
-  if (isDraftId(id)) {
-    if (resolvedSecondary !== undefined && resolvedSecondary !== 'drafts') {
-      throw new Error(
-        `Cannot build variant version id: secondary bundle must be "drafts" or omitted when deriving from a draft id (got "${resolvedSecondary}")`,
-      )
-    }
-    resolvedSecondary = 'drafts'
-  } else if (isVersionId(id)) {
-    const sourceBundle = id.split(PATH_SEPARATOR)[1]!
-    if (
-      resolvedSecondary !== undefined &&
-      resolvedSecondary !== null &&
-      resolvedSecondary !== sourceBundle
-    ) {
-      throw new Error(
-        `Cannot build variant version id: secondary bundle must be "${sourceBundle}" or omitted when deriving from a version id in bundle "${sourceBundle}" (got "${resolvedSecondary}")`,
-      )
-    }
-    resolvedSecondary = sourceBundle
-  }
-  const bundle = getVariantBundleId(variantName, resolvedSecondary ?? null)
+  const bundle = getVariantBundleId(variantName, inferred ?? secondaryBundle)
   return VariantVersionId(
     VERSION_PREFIX + bundle + PATH_SEPARATOR + getPublishedId(id),
   )
@@ -242,12 +172,9 @@ export function getVariantVersionId(
  *
  * e.g. `getVariantName(VariantVersionId('versions.var-french~drafts.page-1'))` → `french`
  * @public
- * @param id - the variant version id
  */
 export function getVariantName(id: VariantVersionId): string {
-  const bundle = id.split(PATH_SEPARATOR)[1]!
-  const {variantName} = parseVariantBundleId(bundle)
-  return variantName
+  return parseVariantBundleId(getVersionNameFromId(id)).variantName
 }
 
 /**
@@ -259,10 +186,14 @@ export function getVariantName(id: VariantVersionId): string {
  *  - `getVariantSecondaryBundle('versions.var-french~drafts.page-1')` → `'drafts'`
  *  - `getVariantSecondaryBundle('versions.var-french~summer.page-1')` → `'summer'`
  * @public
- * @param id - the variant version id
  */
 export function getVariantSecondaryBundle(id: VariantVersionId): string | null {
-  const bundle = id.split(PATH_SEPARATOR)[1]!
-  const {secondaryBundle} = parseVariantBundleId(bundle)
-  return secondaryBundle
+  return parseVariantBundleId(getVersionNameFromId(id)).secondaryBundle
+}
+
+function inferSecondaryBundle(id: DocumentId): string | undefined {
+  if (isVariantVersionId(id) || isPublishedId(id)) return undefined
+  if (isDraftId(id)) return 'drafts'
+  if (isVersionId(id)) return getVersionNameFromId(id)
+  return undefined
 }

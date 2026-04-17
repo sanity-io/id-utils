@@ -35,7 +35,7 @@ describe('parseVariantBundleId', () => {
 
   it('rejects non-variant bundle ids', () => {
     expect(() => parseVariantBundleId('summer')).toThrow(
-      /must start with "var-"/,
+      /"summer" must start with "var-"|only allowed in variant bundles/,
     )
   })
 
@@ -45,7 +45,7 @@ describe('parseVariantBundleId', () => {
 
   it('rejects secondary "published"', () => {
     expect(() => parseVariantBundleId('var-french~published')).toThrow(
-      /omit the secondary bundle/,
+      /plain variant bundle/,
     )
   })
 
@@ -57,7 +57,7 @@ describe('parseVariantBundleId', () => {
 
   it('rejects multiple ~ separators', () => {
     expect(() => parseVariantBundleId('var-a~b~c')).toThrow(
-      /at most one "~" separator/,
+      /composite bundle .* must contain exactly one/,
     )
   })
 })
@@ -65,7 +65,6 @@ describe('parseVariantBundleId', () => {
 describe('getVariantBundleId', () => {
   test.each([
     ['french', undefined, 'var-french'],
-    ['french', null, 'var-french'],
     ['french', 'drafts', 'var-french~drafts'],
     ['french', 'summer', 'var-french~summer'],
   ])('(%s, %s) → %s', (name, secondary, expected) => {
@@ -78,7 +77,7 @@ describe('getVariantBundleId', () => {
 
   it('rejects variant name with var- prefix', () => {
     expect(() => getVariantBundleId('var-french')).toThrow(
-      /must not include the "var-" prefix/,
+      /pass the bare variant name/,
     )
   })
 
@@ -88,7 +87,7 @@ describe('getVariantBundleId', () => {
 
   it('rejects secondary "published"', () => {
     expect(() => getVariantBundleId('french', 'published')).toThrow(
-      /cannot be "published"/,
+      /plain variant bundle/,
     )
   })
 

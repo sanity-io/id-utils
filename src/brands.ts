@@ -32,6 +32,10 @@ export type VersionId = Brand<string, 'versionId'>
  *
  * @public
  */
+// The third Brand type arg is a distinct reserved key: ts-brand's default key
+// (`__type__`) would conflict with VersionId's brand and collapse the
+// intersection to `never`. A separate key (`__variant__`) keeps
+// VariantVersionId assignable to VersionId while remaining a nominal subtype.
 export type VariantVersionId = VersionId &
   Brand<string, 'variantVersionId', '__variant__'>
 /**
@@ -157,10 +161,8 @@ function validateVersionId(id: string) {
     )
   }
   if (versionName.includes(VARIANT_BUNDLE_SEPARATOR)) {
-    // Composite bundle ids (`<primary>~<secondary>`) are only allowed when the
-    // primary bundle is a variant bundle. Run the full variant validation, which
-    // also covers secondary-bundle constraints.
-    validateCompositeBundle(id, versionName)
+    // `~` in the bundle is only allowed when the primary is a variant bundle.
+    parseVariantBundle(versionName, `Not a valid version ID: "${id}"`)
   }
   if (documentId.some(part => part.includes(VARIANT_BUNDLE_SEPARATOR))) {
     throw new Error(
@@ -171,65 +173,73 @@ function validateVersionId(id: string) {
 }
 
 function validateVariantVersionId(id: string) {
-  // At this point `id` is known to be a valid version id. Just constrain the
-  // bundle segment to a variant bundle.
-  const [, versionName] = id.split('.')
-  if (!versionName || !versionName.startsWith(VARIANT_PREFIX)) {
+  const versionName = id.slice(
+    VERSION_PREFIX.length,
+    id.indexOf('.', VERSION_PREFIX.length),
+  )
+  const prefix = `Not a valid variant version ID: "${id}"`
+  if (!versionName.startsWith(VARIANT_PREFIX)) {
     throw new Error(
-      `Not a valid variant version ID: "${id}" – bundle "${versionName}" must start with "${VARIANT_PREFIX}"`,
+      `${prefix} – bundle "${versionName}" must start with "${VARIANT_PREFIX}"`,
     )
   }
-  if (versionName.includes(VARIANT_BUNDLE_SEPARATOR)) {
-    validateCompositeBundle(id, versionName)
-  } else {
-    validateVariantBundleName(id, versionName)
-  }
+  parseVariantBundle(versionName, prefix)
   return id
 }
 
-function validateVariantBundleName(id: string, bundle: string) {
-  const name = bundle.slice(VARIANT_PREFIX.length)
-  if (!name) {
-    throw new Error(
-      `Not a valid variant version ID: "${id}" – variant name in "${bundle}" must be non-empty`,
-    )
-  }
-}
-
-function validateCompositeBundle(id: string, bundle: string) {
+/**
+ * Parse and validate a (potentially composite) variant bundle id.
+ *
+ * `prefix` is prepended to error messages (e.g. `'Not a valid version ID:
+ * "..."'`) so callers get domain-appropriate framing.
+ *
+ * Exported for reuse by converters; not part of the public API.
+ *
+ * @internal
+ */
+export function parseVariantBundle(
+  bundle: string,
+  prefix: string,
+): {variantName: string; secondaryBundle: string | null} {
   const parts = bundle.split(VARIANT_BUNDLE_SEPARATOR)
-  if (parts.length !== 2) {
+  if (parts.length > 2) {
     throw new Error(
-      `Not a valid version ID: "${id}" – composite bundle "${bundle}" must contain exactly one "${VARIANT_BUNDLE_SEPARATOR}" separator`,
+      `${prefix} – composite bundle "${bundle}" must contain exactly one "${VARIANT_BUNDLE_SEPARATOR}" separator`,
     )
   }
-  const [primary, secondary] = parts as [string, string]
+  const primary = parts[0]!
+  const secondary = parts.length === 2 ? parts[1]! : null
   if (!primary.startsWith(VARIANT_PREFIX)) {
     throw new Error(
-      `Not a valid version ID: "${id}" – "${VARIANT_BUNDLE_SEPARATOR}" is only allowed in variant bundles (expected primary to start with "${VARIANT_PREFIX}", got "${primary}")`,
+      `${prefix} – "${VARIANT_BUNDLE_SEPARATOR}" is only allowed in variant bundles (expected primary to start with "${VARIANT_PREFIX}", got "${primary}")`,
     )
   }
-  validateVariantBundleName(id, primary)
+  const variantName = primary.slice(VARIANT_PREFIX.length)
+  if (!variantName) {
+    throw new Error(
+      `${prefix} – variant name in "${primary}" must be non-empty`,
+    )
+  }
+  if (secondary === null) return {variantName, secondaryBundle: null}
   if (!secondary) {
     throw new Error(
-      `Not a valid variant version ID: "${id}" – secondary bundle in "${bundle}" must be non-empty`,
+      `${prefix} – secondary bundle in "${bundle}" must be non-empty`,
     )
   }
   if (secondary.startsWith(VARIANT_PREFIX)) {
     throw new Error(
-      `Not a valid variant version ID: "${id}" – secondary bundle "${secondary}" cannot be a variant bundle`,
+      `${prefix} – secondary bundle "${secondary}" cannot be a variant bundle`,
     )
   }
   if (secondary === 'published') {
     throw new Error(
-      `Not a valid variant version ID: "${id}" – use the plain variant bundle (no "${VARIANT_BUNDLE_SEPARATOR}") to target the published source`,
+      `${prefix} – use the plain variant bundle (no "${VARIANT_BUNDLE_SEPARATOR}") to target the published source`,
     )
   }
   if (secondary === 'versions') {
-    throw new Error(
-      `Not a valid variant version ID: "${id}" – secondary bundle cannot be "versions"`,
-    )
+    throw new Error(`${prefix} – secondary bundle cannot be "versions"`)
   }
+  return {variantName, secondaryBundle: secondary}
 }
 
 function validatePublishedId(id: string) {
