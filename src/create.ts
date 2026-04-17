@@ -1,8 +1,9 @@
 import {uuid} from '@sanity/uuid'
 import {deburr} from 'lodash'
 
-import {DraftId, PublishedId, VersionId} from './brands'
+import {DraftId, PublishedId, VariantVersionId, VersionId} from './brands'
 import {DRAFTS_PREFIX, PATH_SEPARATOR, VERSION_PREFIX} from './constants'
+import {getVariantBundleId} from './converters'
 
 const UNSAFE_CHARS = /[^a-zA-Z0-9_-]+/g
 const LEADING = /^[_-]+/
@@ -57,6 +58,28 @@ export function createVersionId(
 ): VersionId {
   return VersionId(
     VERSION_PREFIX + versionName + PATH_SEPARATOR + generateId(input),
+  )
+}
+
+/**
+ * Create a new variant version id
+ *
+ * @public
+ * @param variantName - The variant name, e.g. `french`
+ * @param secondaryBundle - Optional secondary source-layer bundle. Pass `null`
+ *   or omit to target the published source. Pass `'drafts'` to target the draft
+ *   source, or a release name to target that release.
+ * @param input - Optional input string to create the id from. See
+ *   {@link createPublishedId} for how the input is sanitized.
+ */
+export function createVariantVersionId(
+  variantName: string,
+  secondaryBundle?: string | null,
+  input?: string,
+): VariantVersionId {
+  const bundle = getVariantBundleId(variantName, secondaryBundle)
+  return VariantVersionId(
+    VERSION_PREFIX + bundle + PATH_SEPARATOR + generateId(input),
   )
 }
 

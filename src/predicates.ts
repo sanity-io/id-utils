@@ -2,9 +2,15 @@ import {
   type DocumentId,
   type DraftId,
   type PublishedId,
+  type VariantVersionId,
   type VersionId,
 } from './brands'
-import {DRAFTS_PREFIX, VERSION_PREFIX} from './constants'
+import {
+  DRAFTS_PREFIX,
+  PATH_SEPARATOR,
+  VARIANT_PREFIX,
+  VERSION_PREFIX,
+} from './constants'
 import {getPublishedId} from './converters'
 
 /**
@@ -72,6 +78,18 @@ export function isVersionId(id: DocumentId): id is VersionId {
 }
 
 /**
+ * Check whether a given document ID is a variant version ID, i.e. a version ID
+ * whose bundle starts with the variant prefix (`var-`).
+ * @public
+ * @param id - The document ID to check
+ */
+export function isVariantVersionId(id: DocumentId): id is VariantVersionId {
+  if (!isVersionId(id)) return false
+  const bundle = id.split(PATH_SEPARATOR)[1]
+  return bundle !== undefined && bundle.startsWith(VARIANT_PREFIX)
+}
+
+/**
  * Check whether a particular document ID is the draft ID of another document ID
  * @public
  * @param id - The document ID to check if the candidate is a draft of
@@ -113,4 +131,25 @@ export function isVersionOf(
   candidate: DocumentId,
 ): candidate is VersionId {
   return isVersionId(candidate) && isPublishedIdEqual(id, candidate)
+}
+
+/**
+ * Check whether a particular document ID is a variant version ID of another
+ * document ID, optionally filtering by variant name.
+ * @public
+ * @param id - The document ID whose root group the candidate must belong to
+ * @param candidate - The candidate document ID to check
+ * @param variantName - Optional variant name to require (e.g. `french`)
+ */
+export function isVariantOf(
+  id: DocumentId,
+  candidate: DocumentId,
+  variantName?: string,
+): candidate is VariantVersionId {
+  if (!isVariantVersionId(candidate)) return false
+  if (!isPublishedIdEqual(id, candidate)) return false
+  if (variantName === undefined) return true
+  const bundle = candidate.split(PATH_SEPARATOR)[1]!
+  const primary = bundle.split('~')[0]!
+  return primary === `${VARIANT_PREFIX}${variantName}`
 }
