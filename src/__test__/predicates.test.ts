@@ -7,6 +7,7 @@ import {
   isPublishedId,
   isPublishedIdEqual,
   isPublishedOf,
+  isVariantDefinitionId,
   isVersionId,
   isVersionOf,
 } from '../predicates'
@@ -115,6 +116,7 @@ test('isPublishedOf()', () => {
 test('isPublishedId/isDraftId/isVersionId', () => {
   expect(isPublishedId(DocumentId('foo'))).toBe(true)
   expect(isPublishedId(DocumentId('bar'))).toBe(true)
+  expect(isPublishedId(DocumentId('_.variants.audience-a'))).toBe(true)
   expect(isPublishedId(DocumentId('versions.foo.bar'))).toBe(false)
   expect(isPublishedId(DocumentId('drafts.bar'))).toBe(false)
 
@@ -127,4 +129,9 @@ test('isPublishedId/isDraftId/isVersionId', () => {
   expect(isVersionId(DocumentId('versions.xyz.bar.baz'))).toBe(true)
   expect(isVersionId(DocumentId('drafts.foo.bar'))).toBe(false)
   expect(isVersionId(DocumentId('bar'))).toBe(false)
+
+  expect(isVariantDefinitionId(DocumentId('_.variants.audience-a'))).toBe(true)
+  expect(isVariantDefinitionId(DocumentId('_.variants.foo.bar'))).toBe(true)
+  expect(isVariantDefinitionId(DocumentId('foo'))).toBe(false)
+  expect(isVariantDefinitionId(DocumentId('drafts.foo'))).toBe(false)
 })

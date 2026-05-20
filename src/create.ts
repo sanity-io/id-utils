@@ -1,8 +1,13 @@
 import {uuid} from '@sanity/uuid'
 import {deburr} from 'lodash'
 
-import {DraftId, PublishedId, VersionId} from './brands'
-import {DRAFTS_PREFIX, PATH_SEPARATOR, VERSION_PREFIX} from './constants'
+import {DraftId, PublishedId, VariantDefinitionId, VersionId} from './brands'
+import {
+  DRAFTS_PREFIX,
+  PATH_SEPARATOR,
+  VARIANT_DEFINITION_PREFIX,
+  VERSION_PREFIX,
+} from './constants'
 
 const UNSAFE_CHARS = /[^a-zA-Z0-9_-]+/g
 const LEADING = /^[_-]+/
@@ -58,6 +63,19 @@ export function createVersionId(
   return VersionId(
     VERSION_PREFIX + versionName + PATH_SEPARATOR + generateId(input),
   )
+}
+
+/**
+ * Create a new variant definition document id
+ *
+ * @param input Optional input string to create the id from.
+ * The input string will be converted to a string safe to use as a sanity document id, i.e.
+ * - stripped for any special characters
+ * - capped at max 100 chars
+ * If no input is provided, a random uuid will be used instead
+ */
+export function createVariantDefinitionId(input?: string): VariantDefinitionId {
+  return VariantDefinitionId(VARIANT_DEFINITION_PREFIX + generateId(input))
 }
 
 function generateId(input?: string) {
