@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/sanity-io/id-utils/compare/id-utils-v1.0.0...id-utils-v1.1.0) (2026-06-08)
+
+
+### Features
+
+* adds variantDefinitionId ([#17](https://github.com/sanity-io/id-utils/issues/17)) ([a011ba9](https://github.com/sanity-io/id-utils/commit/a011ba9b9aa9fea0a279608cf587643e5acb5ac1))
+
 ## 1.0.0 (2024-11-11)
 
 
