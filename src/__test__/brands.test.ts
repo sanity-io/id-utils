@@ -1,6 +1,12 @@
 import {expect, test} from 'vitest'
 
-import {DocumentId, DraftId, PublishedId, VersionId} from '../brands'
+import {
+  DocumentId,
+  DraftId,
+  PublishedId,
+  VariantDefinitionId,
+  VersionId,
+} from '../brands'
 
 test('DocumentId()', () => {
   expect(DocumentId('foo')).toEqual('foo')
@@ -9,6 +15,7 @@ test('DocumentId()', () => {
   expect(() => DocumentId('foo.bar.baz')).not.toThrow()
   expect(() => DocumentId('foo.BaR.bAz')).not.toThrow()
   expect(() => DocumentId('_.some.sys-doc')).not.toThrow()
+  expect(() => DocumentId('_.variants.audience-a')).not.toThrow()
   expect(() => DocumentId('versions.some-bundle.doc-123')).not.toThrow()
 
   expect(() => DocumentId('versions.foo')).toThrowErrorMatchingInlineSnapshot(`
@@ -51,6 +58,7 @@ test('PublishedId()', () => {
   expect(() => PublishedId('foo')).not.toThrow()
   expect(() => PublishedId('foo.bar')).not.toThrow()
   expect(() => PublishedId('foo.bar.baz')).not.toThrow()
+  expect(() => PublishedId('_.variants.audience-a')).not.toThrow()
   // note: likely to not be supported by backend
   expect(() => PublishedId('bar.baz.drafts')).not.toThrow()
   expect(() => PublishedId('drafts.foo')).toThrowErrorMatchingInlineSnapshot(
@@ -102,5 +110,19 @@ test('VersionId()', () => {
     VersionId('versions.versions.foo'),
   ).toThrowErrorMatchingInlineSnapshot(
     `[Error: Not a valid version ID: "versions.versions.foo" – invalid VERSION "versions" in versions.[VERSION].id]`,
+  )
+})
+
+test('VariantDefinitionId()', () => {
+  expect(() => VariantDefinitionId('_.variants.audience-a')).not.toThrow()
+  expect(() => VariantDefinitionId('_.variants.foo.bar')).not.toThrow()
+
+  expect(() => VariantDefinitionId('foo')).toThrowErrorMatchingInlineSnapshot(
+    `[Error: Not a valid variant definition ID: "foo" – must start with "_.variants."]`,
+  )
+  expect(() =>
+    VariantDefinitionId('_.variants.'),
+  ).toThrowErrorMatchingInlineSnapshot(
+    `[Error: Not a valid variant definition ID: "_.variants." – must have at least one character followed by "_.variants."]`,
   )
 })

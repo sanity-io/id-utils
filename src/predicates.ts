@@ -2,9 +2,14 @@ import {
   type DocumentId,
   type DraftId,
   type PublishedId,
+  type VariantDefinitionId,
   type VersionId,
 } from './brands'
-import {DRAFTS_PREFIX, VERSION_PREFIX} from './constants'
+import {
+  DRAFTS_PREFIX,
+  VARIANT_DEFINITION_PREFIX,
+  VERSION_PREFIX,
+} from './constants'
 import {getPublishedId} from './converters'
 
 /**
@@ -69,6 +74,15 @@ export function isPublishedId(id: DocumentId): id is PublishedId {
  */
 export function isVersionId(id: DocumentId): id is VersionId {
   return id.startsWith(VERSION_PREFIX)
+}
+
+/**
+ * Check whether a given document ID is a variant definition ID
+ * @public
+ * @param id - The document ID to check
+ */
+export function isVariantDefinitionId(id: string): id is VariantDefinitionId {
+  return id.startsWith(VARIANT_DEFINITION_PREFIX)
 }
 
 /**

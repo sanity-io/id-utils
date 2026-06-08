@@ -1,6 +1,11 @@
 import {type Brand, make} from 'ts-brand'
 
-import {DRAFTS_PREFIX, VALID_ID, VERSION_PREFIX} from './constants'
+import {
+  DRAFTS_PREFIX,
+  VALID_ID,
+  VARIANT_DEFINITION_PREFIX,
+  VERSION_PREFIX,
+} from './constants'
 import {partition, safe} from './helpers'
 
 /**
@@ -19,7 +24,6 @@ export type VersionId = Brand<string, 'versionId'>
  * @public
  */
 export type DocumentId = DraftId | PublishedId | VersionId
-
 /**
  * @public
  */
@@ -67,6 +71,18 @@ export const PublishedId = make<PublishedId>(id => {
 export const VersionId = make<VersionId>(id => {
   validateAnyId(id)
   validateVersionId(id)
+})
+
+/**
+ * @public
+ */
+export type VariantDefinitionId = Brand<string, 'variantDefinitionId'>
+/**
+ * @public
+ */
+export const VariantDefinitionId = make<VariantDefinitionId>(id => {
+  validateAnyId(id)
+  validateVariantDefinitionId(id)
 })
 
 function validateAnyId(id: string) {
@@ -121,6 +137,20 @@ function validateVersionId(id: string) {
   if (versionName === 'drafts' || versionName === 'versions') {
     throw new Error(
       `Not a valid version ID: "${id}" – invalid VERSION "${versionName}" in versions.[VERSION].id`,
+    )
+  }
+  return id
+}
+
+function validateVariantDefinitionId(id: string) {
+  if (!id.startsWith(VARIANT_DEFINITION_PREFIX)) {
+    throw new Error(
+      `Not a valid variant definition ID: "${id}" – must start with "${VARIANT_DEFINITION_PREFIX}"`,
+    )
+  }
+  if (id.length === VARIANT_DEFINITION_PREFIX.length) {
+    throw new Error(
+      `Not a valid variant definition ID: "${id}" – must have at least one character followed by "${VARIANT_DEFINITION_PREFIX}"`,
     )
   }
   return id

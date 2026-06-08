@@ -1,11 +1,17 @@
 import {expect, test} from 'vitest'
 
-import {createDraftId, createPublishedId, createVersionId} from '../create'
+import {
+  createDraftId,
+  createPublishedId,
+  createVariantDefinitionId,
+  createVersionId,
+} from '../create'
 
 test('create from input string', () => {
   expect(createPublishedId('foo')).toEqual('foo')
   expect(createDraftId('foo')).toEqual('drafts.foo')
   expect(createVersionId('xyz', 'foo')).toEqual('versions.xyz.foo')
+  expect(createVariantDefinitionId('foo')).toEqual('_.variants.foo')
 })
 
 test('create from input string with special characters', () => {
@@ -14,6 +20,7 @@ test('create from input string with special characters', () => {
   expect(createDraftId('%Ωweı∂&')).toEqual('drafts.wei')
   expect(createPublishedId('.notvalid')).toEqual('notvalid')
   expect(createVersionId('xyz', '%Ωweı∂&')).toEqual('versions.xyz.wei')
+  expect(createVariantDefinitionId('%Ωweı∂&')).toEqual('_.variants.wei')
 })
 
 test('create without input creates a uuid', () => {
@@ -21,5 +28,8 @@ test('create without input creates a uuid', () => {
   expect(createDraftId()).toMatch(/drafts.\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/)
   expect(createVersionId('xyz')).toMatch(
     /versions.xyz.\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/,
+  )
+  expect(createVariantDefinitionId()).toMatch(
+    /_.variants.\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/,
   )
 })
