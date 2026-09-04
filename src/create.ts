@@ -1,5 +1,4 @@
 import {uuid} from '@sanity/uuid'
-import {deburr} from 'lodash'
 
 import {DraftId, PublishedId, VariantDefinitionId, VersionId} from './brands'
 import {
@@ -12,6 +11,41 @@ import {
 const UNSAFE_CHARS = /[^a-zA-Z0-9_-]+/g
 const LEADING = /^[_-]+/
 const TRAILING = /[_-]+$/
+const LATIN_LETTERS = /[\u00c0-\u00d6\u00d8-\u00f6\u00f8-\u017f]/g
+const COMBINING_MARKS = /[\u0300-\u036f\ufe20-\ufe2f\u20d0-\u20ff]/g
+
+// These Latin letters do not decompose into basic Latin letters when normalized.
+const DEBURRED_LETTERS: Record<string, string> = {
+  Æ: 'Ae',
+  Ð: 'D',
+  Ø: 'O',
+  Þ: 'Th',
+  ß: 'ss',
+  æ: 'ae',
+  ð: 'd',
+  ø: 'o',
+  þ: 'th',
+  Đ: 'D',
+  đ: 'd',
+  Ħ: 'H',
+  ħ: 'h',
+  ı: 'i',
+  Ĳ: 'IJ',
+  ĳ: 'ij',
+  ĸ: 'k',
+  Ŀ: 'L',
+  ŀ: 'l',
+  Ł: 'L',
+  ł: 'l',
+  ŉ: "'n",
+  Ŋ: 'N',
+  ŋ: 'n',
+  Œ: 'Oe',
+  œ: 'oe',
+  Ŧ: 'T',
+  ŧ: 't',
+  ſ: 's',
+}
 
 // Note: Document IDs have a max limit of 128 characters, but we need to leave some breathing room
 // for the prefix and separator characters.
@@ -88,4 +122,15 @@ function makeSafe(input: string) {
     .replace(TRAILING, '')
     .replace(LEADING, '')
     .slice(0, GENERATED_IDS_MAX_LENGTH)
+}
+
+function deburr(input: string) {
+  return input
+    .replace(
+      LATIN_LETTERS,
+      letter =>
+        DEBURRED_LETTERS[letter] ??
+        letter.normalize('NFD').replace(COMBINING_MARKS, ''),
+    )
+    .replace(COMBINING_MARKS, '')
 }

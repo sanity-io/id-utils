@@ -58,7 +58,6 @@
   "browserslist": "extends @sanity/browserslist-config",
   "dependencies": {
     "@sanity/uuid": "^3.0.2",
-    "lodash": "^4.17.21",
     "ts-brand": "^0.2.0"
   },
   "devDependencies": {
@@ -70,7 +69,6 @@
     "@sanity/types": "^3.63.0",
     "@types/diff-match-patch": "^1.0.36",
     "@types/eslint__js": "^8.42.3",
-    "@types/lodash": "^4.17.13",
     "@typescript-eslint/eslint-plugin": "^8.13.0",
     "@typescript-eslint/parser": "^8.13.0",
     "@vitest/coverage-istanbul": "2.1.4",
