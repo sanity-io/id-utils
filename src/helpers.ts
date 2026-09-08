@@ -1,7 +1,5 @@
 // internal helpers
 
-import {partition as lodashPartition} from 'lodash'
-
 export type SafeError = {success: false; error: Error}
 export type SafeSuccess<T> = {success: true; value: T}
 
@@ -23,16 +21,21 @@ export function safe<T>(fn: () => T): SafeResult<T> {
   }
 }
 
-/**
- * lodash types are wildly inaccurate
- * todo: replace with es-toolkit, which has better typings
- * @param array
- * @param predicate
- */
-
 export function partition<T, S extends T>(
   array: T[],
   predicate: (element: T) => element is S,
 ): [trueValues: S[], falseValues: Exclude<T, S>[]] {
-  return lodashPartition(array, predicate)
+  const trueValues: S[] = []
+  const falseValues: Exclude<T, S>[] = []
+
+  for (const element of array) {
+    if (predicate(element)) {
+      trueValues.push(element)
+    } else {
+      // TypeScript cannot infer the negative case of a generic type predicate.
+      falseValues.push(element as Exclude<T, S>)
+    }
+  }
+
+  return [trueValues, falseValues]
 }

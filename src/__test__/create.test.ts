@@ -23,6 +23,17 @@ test('create from input string with special characters', () => {
   expect(createVariantDefinitionId('%Ωweı∂&')).toEqual('_.variants.wei')
 })
 
+test('preserves deburring behavior when creating ids', () => {
+  expect(createPublishedId('ÆÐØÞßæðøþĐđĦħıĲĳĸĿŀŁłŉŊŋŒœŦŧſ')).toEqual(
+    'AeDOThssaedothDdHhiIJijkLlLlnNnOeoeTts',
+  )
+  expect(createPublishedId('de\u0301ja\u0300-vu')).toEqual('deja-vu')
+  expect(createPublishedId('a\u20d0b\ufe20c')).toEqual('abc')
+
+  // Latin characters outside the supported ranges are removed, not deburred.
+  expect(createPublishedId('aḀb')).toEqual('ab')
+})
+
 test('create without input creates a uuid', () => {
   expect(createPublishedId()).toMatch(/\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/)
   expect(createDraftId()).toMatch(/drafts.\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/)
