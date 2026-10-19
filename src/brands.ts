@@ -2,11 +2,15 @@ import {type Brand, make} from 'ts-brand'
 
 import {
   DRAFTS_PREFIX,
+  PATH_SEPARATOR,
+  SCOPE_ID_LENGTH,
   VALID_ID,
+  VALID_SCOPE_ID,
   VARIANT_DEFINITION_PREFIX,
   VERSION_PREFIX,
 } from './constants'
 import {partition, safe} from './helpers'
+import {isVariantVersionIdLike} from './predicates'
 
 /**
  * @public
@@ -72,6 +76,38 @@ export const VersionId = make<VersionId>(id => {
   validateAnyId(id)
   validateVersionId(id)
 })
+
+/**
+ * The id of a variant version document: `versions.{scopeId}.{publishedId}`.
+ *
+ * A variant version id is a version id, so it can be used anywhere a
+ * `VersionId` or `DocumentId` is expected. Note that `scopeId` is a one-way
+ * hash, so `getVersionNameFromId` returns the hash rather than a bundle name.
+ *
+ * @public
+ */
+export type VariantVersionId = Brand<
+  VersionId,
+  'variantVersionId',
+  '__variantVersionType__'
+>
+
+/**
+ * Brand a string as a `VariantVersionId`.
+ *
+ * Only the shape of the id is validated. The scope id is a one-way hash, so
+ * a version id in a bundle whose name happens to be 16 base62 characters
+ * cannot be told apart from a variant version id. Prefer
+ * `createVariantVersionId` when the variant set and bundle are known.
+ *
+ * @public
+ */
+export const VariantVersionId = (id: string): VariantVersionId => {
+  validateAnyId(id)
+  validateVersionId(id)
+  validateVariantVersionId(id)
+  return id as VariantVersionId
+}
 
 /**
  * @public
@@ -140,6 +176,24 @@ function validateVersionId(id: string) {
     )
   }
   return id
+}
+
+function validateVariantVersionId(id: string) {
+  if (isVariantVersionIdLike(id as DocumentId)) {
+    return id
+  }
+
+  // The id is a valid version id, so it is rejected either for its scope id or
+  // for addressing a system document. Report which.
+  const [, scopeId = ''] = id.split(PATH_SEPARATOR)
+  if (!VALID_SCOPE_ID.test(scopeId)) {
+    throw new Error(
+      `Not a valid variant version ID: "${id}" – SCOPE must be ${SCOPE_ID_LENGTH} base62 characters in versions.[SCOPE].id`,
+    )
+  }
+  throw new Error(
+    `Not a valid variant version ID: "${id}" – variants of system documents are not permitted`,
+  )
 }
 
 function validateVariantDefinitionId(id: string) {

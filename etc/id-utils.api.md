@@ -14,6 +14,18 @@ export function createDraftId(input?: string): DraftId
 export function createPublishedId(input?: string): PublishedId
 
 // @public
+export function createVariantDefinitionId(
+input?: string,
+): VariantDefinitionId
+
+// @public
+export function createVariantVersionId(options: {
+    documentId: DocumentId
+    variantIds: string | readonly string[]
+    bundleId?: string
+}): Promise<VariantVersionId>
+
+// @public
 export function createVersionId(
 versionName: string,
 input?: string,
@@ -36,6 +48,9 @@ export function getDraftId(id: DocumentId): DraftId
 
 // @public
 export function getPublishedId(id: DocumentId): PublishedId
+
+// @public
+export function getVariantId(variantDefinitionId: string): string
 
 // @public
 export function getVersionId(
@@ -65,6 +80,16 @@ otherId: DocumentId,
 ): boolean
 
 // @public
+export function isVariantDefinitionId(
+id: string,
+): id is VariantDefinitionId
+
+// @public
+export function isVariantVersionIdLike(
+id: DocumentId,
+): id is VariantVersionId
+
+// @public
 export function isVersionId(id: DocumentId): id is VersionId
 
 // @public
@@ -78,6 +103,22 @@ export type PublishedId = Brand<string, 'publishedId'>
 
 // @public (undocumented)
 export const PublishedId: Brander<PublishedId>;
+
+// @public (undocumented)
+export type VariantDefinitionId = Brand<string, 'variantDefinitionId'>
+
+// @public (undocumented)
+export const VariantDefinitionId: Brander<VariantDefinitionId>;
+
+// @public
+export type VariantVersionId = Brand<
+VersionId,
+'variantVersionId',
+'__variantVersionType__'
+>
+
+// @public
+export const VariantVersionId: (id: string) => VariantVersionId;
 
 // @public (undocumented)
 export type VersionId = Brand<string, 'versionId'>

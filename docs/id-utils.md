@@ -41,6 +41,30 @@ Create a new document id
 </td></tr>
 <tr><td>
 
+[createVariantDefinitionId(input)](./id-utils.createvariantdefinitionid.md)
+
+
+</td><td>
+
+Create a new variant definition document id
+
+
+</td></tr>
+<tr><td>
+
+[createVariantVersionId(options)](./id-utils.createvariantversionid.md)
+
+
+</td><td>
+
+Create the id of a variant version document: `versions.{scopeId}.{publishedId}`<!-- -->.
+
+`scopeId` is a hash of the variant set and bundle, computed with the Web Crypto API, which is why this function is async. Where Web Crypto is unavailable, a JavaScript implementation is used instead.
+
+
+</td></tr>
+<tr><td>
+
 [createVersionId(versionName, input)](./id-utils.createversionid.md)
 
 
@@ -69,6 +93,19 @@ Returns the draft ID of the provided document ID
 </td><td>
 
 Returns the published ID of the provided document ID
+
+
+</td></tr>
+<tr><td>
+
+[getVariantId(variantDefinitionId)](./id-utils.getvariantid.md)
+
+
+</td><td>
+
+Returns the variant id of the provided variant definition id, e.g. `getVariantId('_.variants.french')` returns `french`<!-- -->.
+
+The variant id is the `_id` suffix of the variant definition document, and is what variant version ids are derived from. A value that is already a variant id is returned unchanged.
 
 
 </td></tr>
@@ -140,6 +177,32 @@ Checks if two document ids resolves to the same published ID, ignoring any draft
 </td></tr>
 <tr><td>
 
+[isVariantDefinitionId(id)](./id-utils.isvariantdefinitionid.md)
+
+
+</td><td>
+
+Check whether a given document ID is a variant definition ID
+
+
+</td></tr>
+<tr><td>
+
+[isVariantVersionIdLike(id)](./id-utils.isvariantversionidlike.md)
+
+
+</td><td>
+
+Check whether a given document ID has the shape of a variant version ID: `versions.{scopeId}.{publishedId}`<!-- -->, where `scopeId` is 16 base62 characters.
+
+The scope id is a one-way hash, so this check can only inspect the shape of the id. A version id in a release whose name happens to be 16 base62 characters (e.g. `versions.a1b2c3d4e5f6g7h8.foo`<!-- -->) is indistinguishable from a variant version id, and this function returns `true` for it.
+
+To establish variant definition membership with certainty, read the variants from the document's `_system` attributes.
+
+
+</td></tr>
+<tr><td>
+
 [isVersionId(id)](./id-utils.isversionid.md)
 
 
@@ -157,6 +220,19 @@ Check whether a given document ID is a version ID
 </td><td>
 
 Check whether a particular document ID is a version ID of another document ID
+
+
+</td></tr>
+<tr><td>
+
+[VariantVersionId(id)](./id-utils.variantversionid.md)
+
+
+</td><td>
+
+Brand a string as a `VariantVersionId`<!-- -->.
+
+Only the shape of the id is validated. The scope id is a one-way hash, so a version id in a bundle whose name happens to be 16 base62 characters cannot be told apart from a variant version id. Prefer `createVariantVersionId` when the variant set and bundle are known.
 
 
 </td></tr>
@@ -198,6 +274,16 @@ Description
 <tr><td>
 
 [PublishedId](./id-utils.publishedid.md)
+
+
+</td><td>
+
+
+
+</td></tr>
+<tr><td>
+
+[VariantDefinitionId](./id-utils.variantdefinitionid.md)
 
 
 </td><td>
@@ -257,6 +343,29 @@ Description
 
 </td><td>
 
+
+
+</td></tr>
+<tr><td>
+
+[VariantDefinitionId](./id-utils.variantdefinitionid.md)
+
+
+</td><td>
+
+
+
+</td></tr>
+<tr><td>
+
+[VariantVersionId](./id-utils.variantversionid.md)
+
+
+</td><td>
+
+The id of a variant version document: `versions.{scopeId}.{publishedId}`<!-- -->.
+
+A variant version id is a version id, so it can be used anywhere a `VersionId` or `DocumentId` is expected. Note that `scopeId` is a one-way hash, so `getVersionNameFromId` returns the hash rather than a bundle name.
 
 
 </td></tr>
