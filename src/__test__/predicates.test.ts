@@ -1,6 +1,7 @@
 import {expect, test} from 'vitest'
 
-import {DocumentId} from '../brands'
+import {DocumentId, VariantVersionId} from '../brands'
+import {safe} from '../helpers'
 import {
   isDraftId,
   isDraftOf,
@@ -8,6 +9,7 @@ import {
   isPublishedIdEqual,
   isPublishedOf,
   isVariantDefinitionId,
+  isVariantVersionIdLike,
   isVersionId,
   isVersionOf,
 } from '../predicates'
@@ -135,3 +137,37 @@ test('isPublishedId/isDraftId/isVersionId', () => {
   expect(isVariantDefinitionId(DocumentId('foo'))).toBe(false)
   expect(isVariantDefinitionId(DocumentId('drafts.foo'))).toBe(false)
 })
+
+const variantVersionIdCases = [
+  {id: 'versions.DSLmihOUubL6ePkL.foo', expected: true},
+  {id: 'versions.DSLmihOUubL6ePkL.foo.bar', expected: true},
+  {id: 'versions.0000000000000000._foo', expected: true},
+  // Indistinguishable from a variant version id: the scope id is a hash.
+  {id: 'versions.a1b2c3d4e5f6g7h8.foo', expected: true},
+  {id: 'versions.summer.foo', expected: false},
+  {id: 'versions.DSLmihOUubL6ePk.foo', expected: false},
+  {id: 'versions.DSLmihOUubL6ePkLx.foo', expected: false},
+  {id: 'versions.DSLmihOUubL6ePk_.foo', expected: false},
+  {id: 'versions.DSLmihOUubL6ePk-.foo', expected: false},
+  {id: 'versions.DSLmihOUubL6ePkL._.variants.german', expected: false},
+  {id: 'drafts.foo', expected: false},
+  {id: 'foo', expected: false},
+  {id: 'DSLmihOUubL6ePkL.foo', expected: false},
+  {id: '_.variants.DSLmihOUubL6ePkL', expected: false},
+]
+
+test.each(variantVersionIdCases)(
+  'isVariantVersionIdLike($id) -> $expected',
+  ({id, expected}) => {
+    expect(isVariantVersionIdLike(DocumentId(id))).toBe(expected)
+  },
+)
+
+test.each(variantVersionIdCases)(
+  'isVariantVersionIdLike($id) agrees with the VariantVersionId brand',
+  ({id}) => {
+    expect(isVariantVersionIdLike(DocumentId(id))).toBe(
+      safe(() => VariantVersionId(id)).success,
+    )
+  },
+)

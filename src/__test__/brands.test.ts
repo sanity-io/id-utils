@@ -5,6 +5,7 @@ import {
   DraftId,
   PublishedId,
   VariantDefinitionId,
+  VariantVersionId,
   VersionId,
 } from '../brands'
 
@@ -110,6 +111,45 @@ test('VersionId()', () => {
     VersionId('versions.versions.foo'),
   ).toThrowErrorMatchingInlineSnapshot(
     `[Error: Not a valid version ID: "versions.versions.foo" – invalid VERSION "versions" in versions.[VERSION].id]`,
+  )
+})
+
+test('VariantVersionId()', () => {
+  expect(VariantVersionId('versions.DSLmihOUubL6ePkL.foo')).toEqual(
+    'versions.DSLmihOUubL6ePkL.foo',
+  )
+  expect(() =>
+    VariantVersionId('versions.0000000000000000.foo.bar'),
+  ).not.toThrow()
+
+  expect(() =>
+    VariantVersionId('versions.summer.foo'),
+  ).toThrowErrorMatchingInlineSnapshot(
+    `[Error: Not a valid variant version ID: "versions.summer.foo" – SCOPE must be 16 base62 characters in versions.[SCOPE].id]`,
+  )
+  expect(() =>
+    VariantVersionId('versions.DSLmihOUubL6ePk_.foo'),
+  ).toThrowErrorMatchingInlineSnapshot(
+    `[Error: Not a valid variant version ID: "versions.DSLmihOUubL6ePk_.foo" – SCOPE must be 16 base62 characters in versions.[SCOPE].id]`,
+  )
+  expect(() => VariantVersionId('versions.DSLmihOUubL6ePkLx.foo')).toThrow(
+    /^Not a valid variant version ID/,
+  )
+  expect(() =>
+    VariantVersionId('versions.DSLmihOUubL6ePkL'),
+  ).toThrowErrorMatchingInlineSnapshot(
+    `[Error: Not a valid version ID: "versions.DSLmihOUubL6ePkL" – missing document ID in versions.bundle.[ID]]`,
+  )
+  expect(() =>
+    VariantVersionId('versions.DSLmihOUubL6ePkL._.variants.german'),
+  ).toThrowErrorMatchingInlineSnapshot(
+    `[Error: Not a valid variant version ID: "versions.DSLmihOUubL6ePkL._.variants.german" – variants of system documents are not permitted]`,
+  )
+  expect(() => VariantVersionId('versions.DSLmihOUubL6ePkL._foo')).not.toThrow()
+  expect(() =>
+    VariantVersionId('drafts.foo'),
+  ).toThrowErrorMatchingInlineSnapshot(
+    `[Error: Not a valid version ID: "drafts.foo" – must start with "versions."]`,
   )
 })
 

@@ -3,10 +3,14 @@ import {
   type DraftId,
   type PublishedId,
   type VariantDefinitionId,
+  type VariantVersionId,
   type VersionId,
 } from './brands'
 import {
   DRAFTS_PREFIX,
+  PATH_SEPARATOR,
+  SYSTEM_DIR,
+  VALID_SCOPE_ID,
   VARIANT_DEFINITION_PREFIX,
   VERSION_PREFIX,
 } from './constants'
@@ -77,6 +81,35 @@ export function isVersionId(id: DocumentId): id is VersionId {
 }
 
 /**
+ * Check whether a given document ID has the shape of a variant version ID:
+ * `versions.{scopeId}.{publishedId}`, where `scopeId` is 16 base62 characters.
+ *
+ * The scope id is a one-way hash, so this check can only inspect the shape of
+ * the id. A version id in a release whose name happens to be 16 base62
+ * characters (e.g. `versions.a1b2c3d4e5f6g7h8.foo`) is indistinguishable from
+ * a variant version id, and this function returns `true` for it.
+ *
+ * To establish variant definition membership with certainty, read the variants
+ * from the document's `_system` attributes.
+ *
+ * @public
+ * @param id - The document ID to check
+ */
+export function isVariantVersionIdLike(id: DocumentId): id is VariantVersionId {
+  if (!isVersionId(id)) {
+    return false
+  }
+
+  const [, scopeId, ...publishedId] = id.split(PATH_SEPARATOR)
+
+  return (
+    scopeId !== undefined &&
+    VALID_SCOPE_ID.test(scopeId) &&
+    !isSystemDocumentId(publishedId.join(PATH_SEPARATOR))
+  )
+}
+
+/**
  * Check whether a given document ID is a variant definition ID
  * @public
  * @param id - The document ID to check
@@ -127,4 +160,14 @@ export function isVersionOf(
   candidate: DocumentId,
 ): candidate is VersionId {
   return isVersionId(candidate) && isPublishedIdEqual(id, candidate)
+}
+
+/**
+ * Check whether a published document ID is the ID of a system document, i.e.
+ * its first path element is `_`.
+ *
+ * @internal
+ */
+export function isSystemDocumentId(publishedId: string): boolean {
+  return publishedId.split(PATH_SEPARATOR)[0] === SYSTEM_DIR
 }

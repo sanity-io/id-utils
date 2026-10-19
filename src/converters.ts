@@ -1,5 +1,10 @@
 import {type DocumentId, DraftId, PublishedId, VersionId} from './brands'
-import {DRAFTS_PREFIX, PATH_SEPARATOR, VERSION_PREFIX} from './constants'
+import {
+  DRAFTS_PREFIX,
+  PATH_SEPARATOR,
+  VARIANT_DEFINITION_PREFIX,
+  VERSION_PREFIX,
+} from './constants'
 import {isDraftId, isPublishedId, isVersionId} from './predicates'
 
 /**
@@ -60,4 +65,21 @@ export function getVersionNameFromId(id: VersionId): string {
   const [, versionId] = id.split(PATH_SEPARATOR)
 
   return versionId!
+}
+
+/**
+ * Returns the variant id of the provided variant definition id, e.g.
+ * `getVariantId('_.variants.french')` returns `french`.
+ *
+ * The variant id is the `_id` suffix of the variant definition document, and
+ * is what variant version ids are derived from. A value that is already a
+ * variant id is returned unchanged.
+ *
+ * @public
+ * @param variantDefinitionId - the variant definition id (or variant id) to return the variant id for
+ */
+export function getVariantId(variantDefinitionId: string): string {
+  return variantDefinitionId.startsWith(VARIANT_DEFINITION_PREFIX)
+    ? variantDefinitionId.slice(VARIANT_DEFINITION_PREFIX.length)
+    : variantDefinitionId
 }

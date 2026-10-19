@@ -4,6 +4,7 @@ import {DocumentId, VersionId} from '../brands'
 import {
   getDraftId,
   getPublishedId,
+  getVariantId,
   getVersionId,
   getVersionNameFromId,
 } from '../converters'
@@ -44,6 +45,15 @@ describe('getVersionFromId', () => {
       'abcd',
     )
   })
+})
+
+test.each([
+  ['from variant definition id', '_.variants.audience-a', 'audience-a'],
+  ['from variant id', 'audience-a', 'audience-a'],
+  ['from multi-segment variant definition id', '_.variants.foo.bar', 'foo.bar'],
+  ['from bare variants path', '_.variants', '_.variants'],
+])('getVariantId(): %s', (_, variantDefinitionId, shouldEqual) => {
+  expect(getVariantId(variantDefinitionId)).toEqual(shouldEqual)
 })
 
 test.each([

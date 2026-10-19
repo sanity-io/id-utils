@@ -13,6 +13,37 @@ export function success<T>(value: T): SafeSuccess<T> {
   return {success: true, value}
 }
 
+/**
+ * Throw if `value` is not a string. Guards public entry points against values
+ * from untyped callers, e.g. `null` from JSON.
+ */
+export function assertString(
+  value: unknown,
+  kind: string,
+  hint?: string,
+): asserts value is string {
+  if (typeof value !== 'string') {
+    throw new Error(
+      [
+        `Not a valid ${kind} – must be a string, received ${describeType(value)}.`,
+        hint,
+      ]
+        .filter(Boolean)
+        .join(' '),
+    )
+  }
+}
+
+export function describeType(value: unknown): string {
+  if (value === null) {
+    return 'null'
+  }
+  if (Array.isArray(value)) {
+    return 'array'
+  }
+  return typeof value
+}
+
 export function safe<T>(fn: () => T): SafeResult<T> {
   try {
     return success(fn())
